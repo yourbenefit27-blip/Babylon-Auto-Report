@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Babylon_Auto_V4_LotFix バックテスト検証レポート（3モード比較）</title>
+  <style>
+    :root {
+      --primary: #1a365d;
+      --secondary: #2b6cb0;
+      --accent-photon: #e53e3e;
+      --accent-sonic: #3182ce;
+      --accent-rapid: #38a169;
+      --bg: #f7fafc;
+      --card-bg: #ffffff;
+      --text: #2d3748;
+      --text-muted: #718096;
+      --border: #e2e8f0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border-top: 4px solid var(--border);
+    }
+    .kpi-card.photon { border-top-color: var(--accent-photon); }
+    .kpi-card.sonic { border-top-color: var(--accent-sonic); }
+    .kpi-card.rapid { border-top-color: var(--accent-rapid); }
+    .kpi-card h3 {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .kpi-card .val {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .kpi-card .sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .section-card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 24px;
+    }
+    .section-card h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: var(--primary);
+      border-left: 4px solid var(--secondary);
+      padding-left: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: right;
+    }
+    th:first-child, td:first-child {
+      text-align: left;
+    }
+    th {
+      background-color: #edf2f7;
+      color: var(--primary);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    tr:hover {
+      background-color: #f8fafc;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .tag-photon { background-color: #fed7d7; color: #9b2c2c; }
+    .tag-sonic { background-color: #bee3f8; color: #2c5282; }
+    .tag-rapid { background-color: #c6f6d5; color: #22543d; }
+    .profit { color: #2b6cb0; font-weight: 600; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .strategy-box {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      background: #faf5ff;
+    }
+    .strategy-box.photon-box { background: #fff5f5; }
+    .strategy-box.sonic-box { background: #ebf8ff; }
+    .strategy-box.rapid-box { background: #f0fff4; }
+    .strategy-box h3 {
+      font-size: 15px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .strategy-box ul {
+      margin-left: 20px;
+      font-size: 13px;
+      color: #4a5568;
+    }
+    .strategy-box li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Babylon_Auto_V4_LotFix 検証レポート</h1>
+    <p>対象通貨ペア: GOLDmicro (GOLD) | 時間足: 5分足(M5) | 期間: 2025.10.01 - 2026.09.30 | 初期証拠金: 100,000円</p>
+  </header>
+
+  <div class="kpi-grid">
+    <div class="kpi-card photon">
+      <h3>Photon モード</h3>
+      <div class="val" style="color: var(--accent-photon);">+3,461,886 円</div>
+      <div class="sub">最終残高: 3,561,886 円 (+3,461.9%)</div>
+      <div class="sub" style="margin-top:6px;">PF: 3.63 | 最大DD: 581,655 円 (21.2%)</div>
+    </div>
+    <div class="kpi-card sonic">
+      <h3>Sonic モード</h3>
+      <div class="val" style="color: var(--accent-sonic);">+1,298,861 円</div>
+      <div class="sub">最終残高: 1,398,861 円 (+1,298.9%)</div>
+      <div class="sub" style="margin-top:6px;">PF: 3.58 | 最大DD: 213,352 円 (17.7%)</div>
+    </div>
+    <div class="kpi-card rapid">
+      <h3>Rapid モード</h3>
+      <div class="val" style="color: var(--accent-rapid);">+618,041 円</div>
+      <div class="sub">最終残高: 718,041 円 (+618.0%)</div>
+      <div class="sub" style="margin-top:6px;">PF: 3.60 | 最大DD: 80,650 円 (25.3%)</div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <h2>3モード 総合スペック比較表</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th><span class="tag tag-photon">Photonモード</span></th>
+          <th><span class="tag tag-sonic">Sonicモード</span></th>
+          <th><span class="tag tag-rapid">Rapidモード</span></th>
+          <th>評価・分析コメント</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>純利益 (Net Profit)</td>
+          <td class="profit">+3,461,886.18 円</td>
+          <td class="profit">+1,298,861.22 円</td>
+          <td class="profit">+618,040.57 円</td>
+          <td>Photonが突出したハイリターン（Rapidの約5.6倍）</td>
+        </tr>
+        <tr>
+          <td>総取引数 (Trade Count)</td>
+          <td>303 回</td>
+          <td>236 回</td>
+          <td>316 回</td>
+          <td>Sonicは厳選エントリー、Rapidは最多手数・高回転</td>
+        </tr>
+        <tr>
+          <td>勝率 (Win Rate)</td>
+          <td>78.55% (238/65)</td>
+          <td>77.54% (183/53)</td>
+          <td>78.48% (248/68)</td>
+          <td>全モード78%前後で極めて均一な勝率設計</td>
+        </tr>
+        <tr>
+          <td>プロフィットファクター (PF)</td>
+          <td>3.63</td>
+          <td>3.58</td>
+          <td>3.60</td>
+          <td>3モード全て3.6水準と極めて高効率</td>
+        </tr>
+        <tr>
+          <td>最大ドローダウン額</td>
+          <td>581,655.88 円</td>
+          <td>213,352.38 円</td>
+          <td>80,649.50 円</td>
+          <td>Rapidは最大DDが8万円台と圧倒的に低リスク</td>
+        </tr>
+        <tr>
+          <td>最大ドローダウン率</td>
+          <td>21.22%</td>
+          <td>17.66%</td>
+          <td>25.28%</td>
+          <td>比率ベースではSonicが最も低水準</td>
+        </tr>
+        <tr>
+          <td>相対ドローダウン率</td>
+          <td>50.30%</td>
+          <td>50.14%</td>
+          <td>26.21%</td>
+          <td>Rapidはピークからの落ち込みが他2つの半分程度</td>
+        </tr>
+        <tr>
+          <td>最大負トレード</td>
+          <td>-141,970.21 円</td>
+          <td>-58,753.00 円</td>
+          <td>-16,813.51 円</td>
+          <td>Rapidは単発損失が極小で資金ショートリスク極小</td>
+        </tr>
+        <tr>
+          <td>最大勝トレード</td>
+          <td>+199,964.87 円</td>
+          <td>+93,236.70 円</td>
+          <td>+32,604.10 円</td>
+          <td>Photonは複利とナンピン決済で大きな利益を確保</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-card">
+    <h2>月別損益・月末残高推移一覧（2025.10 〜 2026.09）</h2>
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">対象年月</th>
+          <th colspan="2"><span class="tag tag-photon">Photonモード</span></th>
+          <th colspan="2"><span class="tag tag-sonic">Sonicモード</span></th>
+          <th colspan="2"><span class="tag tag-rapid">Rapidモード</span></th>
+        </tr>
+        <tr>
+          <th>当月損益</th>
+          <th>月末残高</th>
+          <th>当月損益</th>
+          <th>月末残高</th>
+          <th>当月損益</th>
+          <th>月末残高</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>初期証拠金</td>
+          <td>-</td>
+          <td>100,000 円</td>
+          <td>-</td>
+          <td>100,000 円</td>
+          <td>-</td>
+          <td>100,000 円</td>
+        </tr>
+        <tr>
+          <td>2025年10月</td>
+          <td class="profit">+58,214 円</td>
+          <td>158,214 円</td>
+          <td class="profit">+38,903 円</td>
+          <td>138,903 円</td>
+          <td class="profit">+25,906 円</td>
+          <td>125,906 円</td>
+        </tr>
+        <tr>
+          <td>2025年11月</td>
+          <td class="profit">+74,210 円</td>
+          <td>232,424 円</td>
+          <td class="profit">+43,246 円</td>
+          <td>182,149 円</td>
+          <td class="profit">+26,874 円</td>
+          <td>152,780 円</td>
+        </tr>
+        <tr>
+          <td>2025年12月</td>
+          <td class="profit">+92,808 円</td>
+          <td>325,232 円</td>
+          <td class="profit">+21,813 円</td>
+          <td>203,962 円</td>
+          <td class="profit">+28,594 円</td>
+          <td>181,374 円</td>
+        </tr>
+        <tr>
+          <td>2026年01月</td>
+          <td class="profit">+70,881 円</td>
+          <td>396,113 円</td>
+          <td class="profit">+26,069 円</td>
+          <td>230,031 円</td>
+          <td class="profit">+23,152 円</td>
+          <td>204,526 円</td>
+        </tr>
+        <tr>
+          <td>2026年02月</td>
+          <td class="profit">+58,520 円</td>
+          <td>454,633 円</td>
+          <td class="profit">+23,425 円</td>
+          <td>253,456 円</td>
+          <td class="profit">+20,266 円</td>
+          <td>224,792 円</td>
+        </tr>
+        <tr>
+          <td>2026年03月</td>
+          <td class="profit">+262,611 円</td>
+          <td>717,244 円</td>
+          <td class="profit">+121,798 円</td>
+          <td>375,254 円</td>
+          <td class="profit">+69,954 円</td>
+          <td>294,746 円</td>
+        </tr>
+        <tr>
+          <td>2026年04月</td>
+          <td class="profit">+250,165 円</td>
+          <td>967,409 円</td>
+          <td class="profit">+113,769 円</td>
+          <td>489,023 円</td>
+          <td class="profit">+49,139 円</td>
+          <td>343,885 円</td>
+        </tr>
+        <tr>
+          <td>2026年05月</td>
+          <td class="profit">+137,450 円</td>
+          <td>1,104,858 円</td>
+          <td class="profit">+68,218 円</td>
+          <td>557,241 円</td>
+          <td class="profit">+32,932 円</td>
+          <td>376,817 円</td>
+        </tr>
+        <tr>
+          <td>2026年06月</td>
+          <td class="profit">+551,010 円</td>
+          <td>1,655,868 円</td>
+          <td class="profit">+214,574 円</td>
+          <td>771,816 円</td>
+          <td class="profit">+86,143 円</td>
+          <td>462,960 円</td>
+        </tr>
+        <tr>
+          <td>2026年07月</td>
+          <td class="profit">+421,655 円</td>
+          <td>2,077,522 円</td>
+          <td class="profit">+184,377 円</td>
+          <td>956,192 円</td>
+          <td class="profit">+60,985 円</td>
+          <td>523,946 円</td>
+        </tr>
+        <tr>
+          <td>2026年08月</td>
+          <td class="profit">+441,735 円</td>
+          <td>2,519,258 円</td>
+          <td class="profit">+86,835 円</td>
+          <td>1,043,027 円</td>
+          <td class="profit">+62,127 円</td>
+          <td>586,073 円</td>
+        </tr>
+        <tr>
+          <td>2026年09月</td>
+          <td class="profit">+1,042,628 円</td>
+          <td>3,561,886 円</td>
+          <td class="profit">+355,834 円</td>
+          <td>1,398,861 円</td>
+          <td class="profit">+131,968 円</td>
+          <td>718,041 円</td>
+        </tr>
+        <tr style="font-weight: 700; background-color: #edf2f7;">
+          <td>年間合計</td>
+          <td class="profit">+3,461,886 円</td>
+          <td>3,561,886 円</td>
+          <td class="profit">+1,298,861 円</td>
+          <td>1,398,861 円</td>
+          <td class="profit">+618,041 円</td>
+          <td>718,041 円</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-card">
+    <h2>各モードの運用特性と推奨アプローチ</h2>
+    <div class="grid-2">
+      <div class="strategy-box photon-box">
+        <h3><span class="tag tag-photon">Photonモード</span> 積極複利・最大リターン重視</h3>
+        <ul>
+          <li><strong>リターン</strong>: 1年で初期10万円が約356万円へ急成長（月次全勝）</li>
+          <li><strong>リスク要因</strong>: 最大DDが約58万円。後半ロット拡大に伴い含み損の振れ幅が大きい</li>
+          <li><strong>推奨口座</strong>: 余剰資金かつ利益を定期的に別口座へ退避させる「ブースト運用」向け</li>
+        </ul>
+      </div>
+
+      <div class="strategy-box sonic-box">
+        <h3><span class="tag tag-sonic">Sonicモード</span> 厳選エントリー・バランス重視</h3>
+        <ul>
+          <li><strong>リターン</strong>: 1年で初期10万円が約140万円（安定して年利1000%超）</li>
+          <li><strong>リスク要因</strong>: 取引回数を絞り最大DDは21万円に抑制。精神的負担が少ない</li>
+          <li><strong>推奨口座</strong>: 日々の値動きを穏やかに見守りつつ、着実に複利を伸ばしたい主力口座向け</li>
+        </ul>
+      </div>
+
+      <div class="strategy-box rapid-box">
+        <h3><span class="tag tag-rapid">Rapidモード</span> 資金防衛・高回転低リスク型</h3>
+        <ul>
+          <li><strong>リターン</strong>: 1年で初期10万円が約72万円（月間2万〜13万円のコツコツ型）</li>
+          <li><strong>リスク要因</strong>: 最大DDが約8万円（相対DD 26%）と3モード中最も安全</li>
+          <li><strong>推奨口座</strong>: 元本割れを極力避けたい初期導入時や、少額から安心スタートしたい口座向け</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
